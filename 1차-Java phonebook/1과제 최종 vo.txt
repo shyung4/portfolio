@@ -1,0 +1,55 @@
+package vo;
+
+public class MemberMe {
+
+	private String name;
+	private String phone;
+	private String address;
+	private String group;
+	
+	public MemberMe() {
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	public String getGroup() {
+		return group;
+	}
+
+	public void setGroup(String group) {
+		this.group = group;
+	}
+
+	@Override
+	public String toString() {
+		return "회원정보 : 이름 = " + name + ", 전화번호 = " + phone 
+				+ ", 주소 = " + address + ", 그룹 = " + group
+				;
+	}
+	
+	
+	
+}

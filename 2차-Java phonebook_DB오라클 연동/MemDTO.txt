@@ -1,0 +1,71 @@
+package dto;
+
+public class MemDTO {
+	String mbNo;
+	String mbNm;
+	String mbPh;
+	String mbAd;
+	String mbGno;
+	String mbGnm;
+	
+	String listNum;
+	
+	@Override
+	public String toString() {
+		
+		return "회원번호 " + mbNo + ") 회원이름 : " + mbNm 
+				+ ", 회원전화번호 : " + mbPh 
+				+ ", 회원주소 : " + mbAd 
+				+ ", 회원그룹 : " + mbGnm;
+	}
+	
+	
+	
+	public String getMbNo() {
+		return mbNo;
+	}
+	public void setMbNo(String mbNo) {
+		this.mbNo = mbNo;
+	}
+	public String getMbNm() {
+		return mbNm;
+	}
+	public void setMbNm(String mbNm) {
+		this.mbNm = mbNm;
+	}
+	public String getMbPh() {
+		return mbPh;
+	}
+	public void setMbPh(String mbPh) {
+		this.mbPh = mbPh;
+	}
+	public String getMbAd() {
+		return mbAd;
+	}
+	public void setMbAd(String mbAd) {
+		this.mbAd = mbAd;
+	}
+	public String getMbGno() {
+		return mbGno;
+	}
+	public void setMbGno(String mbGno) {
+		this.mbGno = mbGno;
+	}
+	public String getMbGnm() {
+		return mbGnm;
+	}
+	public void setMbGnm(String mbGnm) {
+		this.mbGnm = mbGnm;
+	}
+	
+	
+	public String getListNum() {
+		return listNum;
+	}
+	public void setListNum(String listNum) {
+		this.listNum = listNum;
+	}
+	
+	
+	
+}

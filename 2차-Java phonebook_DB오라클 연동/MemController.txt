@@ -1,0 +1,39 @@
+package controller;
+
+import java.util.Scanner;
+
+import services.MemService;
+import view.MemView;
+
+public class MemController {
+
+	public static void main(String[] args) {
+		Scanner scanner = new Scanner(System.in);
+		MemView memView = new MemView();
+		MemService memService = new MemService();
+		
+		while(true) {
+			memView.showMenu();
+			System.out.println("메뉴를 숫자로 선택하세요");
+			String menu = scanner.next();
+			if(menu.equals("1")) {
+				memView.searchAll(memService.searchAll());
+			}else if(menu.equals("2")) {
+				memService.insertMember(scanner);
+			}else if(menu.equals("3")) {
+					memService.modifyMember(scanner);
+			}else if(menu.equals("4")) {
+					memService.deleteMember(scanner);
+			}else if(menu.equals("5")) {
+				System.out.println("시스템을 종료합니다");
+				scanner.close();
+				return;
+			}else {
+				System.out.println("잘못된 선택입니다, 1~5에서 고르세요");
+			}
+			
+		}
+		
+	}
+
+}

@@ -1,0 +1,316 @@
+package main;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Scanner;
+import java.util.Set;
+
+import vo.MemberMe;
+
+public class MemberMod {
+	public static HashMap<String, MemberMe> hashBook = new HashMap<>();
+	static public void showMenu() {
+		System.out.println();
+		System.out.println("=============================");
+		System.out.println("▼  다음 메뉴 중 하나를 선택하세요   ▼");
+		System.out.println("=============================");
+		System.out.println("1. 회원 추가");
+		System.out.println("2. 회원 목록");
+		System.out.println("3. 회원 수정");
+		System.out.println("4. 회원 삭제");
+		System.out.println("5. 종료");
+		System.out.print(">> 메뉴 선택 : ");
+	}
+
+/////////////////////////main start//////////////////////////
+	public static void main(String[] args) {
+		Scanner scanner = new Scanner(System.in);
+		while (true) {
+			showMenu();
+			String menuSelect = scanner.next();
+			if (menuSelect.equals("1")) {
+				addMember(scanner);
+			} else if (menuSelect.equals("2")) {
+				displayMembers(scanner);
+			} else if (menuSelect.equals("3")) {
+				modifyMembers(scanner);
+			} else if (menuSelect.equals("4")) {
+				deleteMember(scanner);
+			} else if (menuSelect.equals("5")) {
+				break;
+			} else {
+				System.out.println("잘못된 입력값입니다 1~5만 입력하시오.\n");
+			} 
+		} 
+		System.out.println("\n5번을 선택하셨습니다. 프로그램을 종료합니다\n");
+		scanner.close();
+	} 
+///////////////////////////main end///////////////////////////////		
+
+//////////////////////////1번 메뉴//////////////////////////////////
+	public static void addMember(Scanner scanner) {
+		MemberMe memberClass = new MemberMe();
+		System.out.println("등록할 회원의 정보를 입력하세요.");
+		String name = addName(scanner);
+		String phone = addPhone(scanner);
+		String address = addAddress(scanner);
+		String group = addGroup(scanner);
+		memberClass.setName(name);
+		memberClass.setPhone(phone);
+		memberClass.setAddress(address);
+		memberClass.setGroup(group);
+		hashBook.put(memberClass.getPhone(), memberClass);
+	}
+//////////////////////////1번 메뉴 end//////////////////////////////
+
+	
+//////////////////////////2번 메뉴//////////////////////////////////
+////이름으로 더 검색할것인지 말지의 프레임 코드
+	public static void displayMembers(Scanner scanner) {
+		while (true) {
+			if(hashBook.size()==0) {
+				System.out.println("\n!========회원 목록이 없으므로 메뉴로 돌아갑니다========!");
+				return;
+			}else {
+				showMembersDefault();
+				System.out.println();
+				System.out.print("이름으로 검색해보시겠습니까? (y/n) >> ");
+				String chosenMenu = scanner.next();
+				if (chosenMenu.equals("y")) {
+					while (true) {
+						showSearchedMembers(scanner);
+						String answer = yesOrNoSub(scanner);
+						if (answer.equals("y")) {
+							System.out.println();
+						} else if (answer.equals("n")) {
+							return;
+						}
+					}
+				} else if (chosenMenu.equals("n")) {
+					break;
+				} else {
+					System.out.println("잘못된 입력 값입니다! y와 n중에서 고르시오!!");
+				}
+			}
+		}
+	}
+////showMembersDefault의 전체 보여주기
+	public static void showMembersDefault() {
+		Set<String> keyList = hashBook.keySet();
+		Iterator<String> it = keyList.iterator();
+		System.out.println("\n==================다음은 회원의 전체목록입니다=======================");
+		while (it.hasNext()) {
+			String key = it.next();
+			MemberMe infos = hashBook.get(key);
+			System.out.println(infos.toString());
+		}System.out.println("============================================================");
+	}
+////showSearchedMembers의 검색한것만 목록으로 보여주기
+	public static HashMap<String, MemberMe> showSearchedMembers(Scanner scanner) {
+		HashMap<String, MemberMe> al = new HashMap<>();
+		Set<String> keyList = hashBook.keySet();
+		Iterator<String> it = keyList.iterator();
+		while(true) {
+			showMembersDefault();
+			System.out.print("\n위의 목록에서 검색하고자 하는 이름을 입력하세요 : ");
+			String searchName = scanner.next();
+			System.out.println();
+			int i = 0;
+			while (it.hasNext()) {
+				String key = it.next();
+				MemberMe info = hashBook.get(key);
+				if (info.getName().equals(searchName)) {
+					i++;
+					System.out.println(i + ". " + info.toString());
+					al.put(String.valueOf(i), info);
+					continue;
+				}
+			}
+			if (i == 0) {
+				System.out.println(searchName + "의 정보는 없습니다");
+				return al;
+			}else {
+				return al;
+			}
+		} 
+	}
+//////////////////////////2번 메뉴 end//////////////////////////////
+	
+//////////////////////////3번 메뉴//////////////////////////////////
+////검색한 회원 목록 보여주기
+	public static void modifyMembers(Scanner scanner) {
+		HashMap<String, MemberMe> alTemp;
+		while(true) {
+			if(hashBook.size()==0) {
+				System.out.println("\n!========회원 목록이 없으므로 메뉴로 돌아갑니다========!");
+				break;
+			}else {
+				alTemp = showSearchedMembers(scanner);
+				if(alTemp.size()!=0) { 
+					chooseNum(scanner, alTemp);
+				}
+				String answer = yesOrNoSub(scanner);
+				if (answer.equals("y")) {
+					System.out.println();
+				} else if (answer.equals("n")) {
+					return;
+				}
+			}
+		}
+	}	
+////선택한 회원 수정하기
+	public static void chooseNum(Scanner scanner, HashMap<String, MemberMe> al) {
+		while(true) {
+		Set<String> keyList = hashBook.keySet();
+		Iterator<String> it = keyList.iterator();
+		System.out.print("\n수정할 회원의 번호로 고르세요 : ");
+		String chosenNumber = scanner.next();
+			while (it.hasNext()) {
+				String key = it.next();
+				MemberMe info = hashBook.get(key);
+				if (al.containsKey(chosenNumber)) { 
+					if (info.getPhone().equals(al.get(chosenNumber).getPhone())) { 
+						System.out.println("지금부터 " + chosenNumber + "번의 (" 
+									     + al.get(chosenNumber).getPhone() + ")의 정보를 수정하겠습니다");
+						info.setName(addName(scanner));
+						System.out.println("\n전화번호는 수정이 불가능합니다");
+						System.out.println("들어갈 전화번호는 " + info.getPhone() + "이 됩니다\n");
+						info.setPhone(info.getPhone());
+						info.setAddress(addAddress(scanner));
+						info.setGroup(addGroup(scanner));
+						System.out.println(chosenNumber + "번 회원정보의 수정을 완료했습니다");
+						showMembersDefault();
+						return;
+					}
+				} 
+			}
+		}
+	}
+//////////////////////////3번 메뉴 end//////////////////////////////
+	
+//////////////////////////4번 메뉴//////////////////////////////////
+////검색한 회원 보여주기
+	public static void deleteMember(Scanner scanner) {
+		HashMap<String, MemberMe> alTemp;
+		while(true) {
+			if(hashBook.size()==0) {
+				System.out.println("\n!========회원 목록이 없으므로 메뉴로 돌아갑니다========!");
+				break;
+			}else {
+				alTemp = showSearchedMembers(scanner);
+				if(alTemp.size()!=0) {
+					chooseNum1(scanner, alTemp);
+				}
+				String answer = yesOrNoSub(scanner);
+				if (answer.equals("y")) {
+					System.out.println();
+				} else if (answer.equals("n")) {
+					return;
+				}
+			}
+		}
+	}
+////선택한 회원 삭제하기
+	public static void chooseNum1(Scanner scanner, HashMap<String, MemberMe> al) {
+		while(true) {
+			Set<String> keyList = hashBook.keySet();
+			Iterator<String> it = keyList.iterator();
+			System.out.println();
+			System.out.print("삭제할 회원을 번호로 고르세요 : ");
+			String chosenNumber = scanner.next();
+			while (it.hasNext()) {
+				String key = it.next();
+				MemberMe info = hashBook.get(key);
+				if (al.containsKey(chosenNumber)) { 
+					if (info.getPhone().equals(al.get(chosenNumber).getPhone())) { 
+						System.out.println("\n선택하신 "+ chosenNumber+"번 ("+ al.get(chosenNumber).getPhone() + ")의 정보를 삭제했습니다");
+						hashBook.remove(key);
+						if(hashBook.size()==0) {
+							return;
+						}else {
+							showMembersDefault();
+							return;
+						}
+					}
+				}
+			}
+		} 
+	}
+//////////////////////////4번 메뉴 end//////////////////////////////
+	
+////(y/n) 맞을때까지 무한반복
+	public static String yesOrNoSub(Scanner scanner) {
+		String answer;
+		while (true) {
+			System.out.print("\n더 진행하시겠습니까? n을 선택하면 메뉴로 돌아갑니다 (y/n) >> ");
+			answer = scanner.next();
+			if (answer.equals("y")) {
+				break;
+			} else if (answer.equals("n")) {
+				break;
+			}
+		}
+		return answer;
+	}
+	
+	public static String addName(Scanner scanner) {
+		System.out.print("이름 : ");
+		while (true) {
+			String name = scanner.next();
+			if (name.length() > 1) {
+				return name;
+			} else {
+				System.out.println("두 자 이상 입력하세요 \n>>");
+			}
+		}
+	}
+	
+	public static String addPhone(Scanner scanner) {
+		System.out.print("11자리의 전화번호를 입력하시오(ex: 01012345678) : ");
+		while (true) {
+			String phoneInput = scanner.next();
+			if (!(phoneInput.length() == 11)) {
+				System.out.print("전화번호 입력오류 (11개의 숫자를 입력하세요) \n>> ");
+			} else { 
+				if (hashBook.isEmpty()) { 
+					return phoneInput;
+				} else if (!(hashBook.containsKey(phoneInput))) {
+					return phoneInput;
+				} else {
+					System.out.println("중복된 전화번호입니다 다시 입력하세요 \n>>");
+				}
+			}
+		} 
+	}
+	
+	public static String addAddress(Scanner scanner) {
+		while (true) {
+			String address = scanner.nextLine();
+			if (address.isEmpty()) {
+				System.out.print("주소를 입력하시오 (주소는 비어있으면 안됩니다) : ");
+			} else if (address.isBlank()) {
+				System.out.print("주소를 입력하시오 (주소는 비어있으면 안됩니다) : ");
+			} else {
+				System.out.println("주소를 입력하였습니다");
+				return address;
+			}
+		} 
+	}
+	
+	public static String addGroup(Scanner scanner) {
+		System.out.print("종류(가족, 친구, 기타 중 하나만 입력하세요) : ");
+		while (true) {
+			String groupInput = scanner.next();
+			if (groupInput.equals("가족")) {
+				return groupInput;
+			} else if (groupInput.equals("친구")) {
+				return groupInput;
+			} else if (groupInput.equals("기타")) {
+				return groupInput;
+			} else {
+				System.out.println("오류입니다. 가족, 친구, 기타 중 하나만 입력하시오");
+				System.out.print(">> ");
+			}
+		} 
+	}
+}

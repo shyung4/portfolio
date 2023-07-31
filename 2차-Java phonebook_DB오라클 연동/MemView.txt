@@ -1,0 +1,52 @@
+package view;
+
+import java.util.ArrayList;
+
+import dto.MemDTO;
+
+public class MemView {
+
+	public void showMenu() {
+		System.out.println();
+		System.out.println("=============================");
+		System.out.println("         1 : 회원조회");
+		System.out.println("         2 : 회원추가");
+		System.out.println("         3 : 회원수정");
+		System.out.println("         4 : 회원삭제");
+		System.out.println("         5 : 종료");
+		System.out.println("=============================");
+		System.out.println();
+	}
+	
+	public void searchAll(ArrayList<MemDTO> memList) {
+		System.out.println("총 "+ memList.size() + "명의 회원이 있습니다");
+		if(memList.size()!=0 ) {
+			for(int i=0; i<memList.size(); i++) {
+				System.out.println(memList.get(i));
+			}
+		}
+	}
+
+	public ArrayList<MemDTO> searchName(ArrayList<MemDTO> memList) {
+		ArrayList<MemDTO> listMem = new ArrayList<MemDTO>();
+		System.out.println("총 "+ memList.size() + "명의 회원이 있습니다");
+		for(int i=0; i<memList.size(); i++) {
+			
+			MemDTO memDto = new MemDTO();
+			System.out.println((i+1) + ". 회원이름 : " + memList.get(i).getMbNm()
+								 + " 전화번호 : " + memList.get(i).getMbPh()
+								 + " 회원주소 : " + memList.get(i).getMbAd()
+								 + " 회원그룹 : " + memList.get(i).getMbGnm());
+			memDto.setListNum(String.valueOf(i+1));
+			memDto.setMbNo(memList.get(i).getMbNo());
+			memDto.setMbNm(memList.get(i).getMbNm());
+			memDto.setMbPh(memList.get(i).getMbPh());
+			memDto.setMbAd(memList.get(i).getMbAd());
+			memDto.setMbGnm(memList.get(i).getMbGnm());
+			listMem.add(i, memDto);;
+			}
+		
+		return listMem;
+	}
+	
+}

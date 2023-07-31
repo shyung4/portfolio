@@ -1,0 +1,317 @@
+package services;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Scanner;
+import java.util.regex.Pattern;
+
+import dao.MemDAO;
+import dto.MemDTO;
+import view.MemView;
+
+public class MemService {
+
+	public ArrayList<MemDTO> searchAll() { //전체 보여주기
+		return new MemDAO().searchAll();
+	}
+
+	public ArrayList<MemDTO> searchByName(Scanner scanner) { //이름 검색해서 보여주기
+		
+		System.out.print("검색할 이름을 입력하세요 : ");
+		
+		String searchedName = scanner.next(); 
+		return new MemDAO().searchByName(searchedName);
+	}
+	
+	public void insertMember(Scanner scanner) { //멤버 추가하기
+		MemDTO memList = new MemDTO();
+		MemDAO memDao = new MemDAO();
+		int result;
+		
+		System.out.println("지금부터 회원을 추가하겠습니다");
+		String mbno = filterMbno(scanner); //회원번호 예외처리
+		memList.setMbNo(mbno);
+		
+		String mbnm = filterMbnm(scanner); //이름 예외처리
+		memList.setMbNm(mbnm);
+		
+		String mbph = filterMbph(scanner, null); //번호 예외처리
+		memList.setMbPh(mbph);
+		
+		String mbad = filterMbad(scanner); //주소 예외처리
+		memList.setMbAd(mbad);
+		
+		String inputGroup =  filterGroup(scanner); //그룹 예외처리
+		memList.setMbGno(inputGroup);
+
+		result = memDao.insertMember(memList); //db에 추가하기
+		if(result==1) {
+			System.out.println("회원추가 성공");
+		}else {
+			System.out.println("회원추가 실패");
+		}	
+	}
+	
+	public void modifyMember(Scanner scanner) { //멤버 수정하기
+		MemDTO memList = new MemDTO();
+		MemDAO memDao = new MemDAO();
+		String mbno = null;
+		ArrayList<MemDTO> noList= new ArrayList<MemDTO>();
+		
+		while(true) { // 이름 검색후 없으면 무한루프로 다시 검색하게
+			noList = searchByName(scanner);
+			if(noList.size()!=0) {
+				break;
+			}else {
+				System.out.println("없는 이름입니다 다시 입력하세요");
+			}
+		}
+		
+		
+		MemDTO tempDto = listingsMem(noList, scanner); //검색한 회원 숫자 1,2,3 부여하고 그중에서 고르기
+		mbno = tempDto.getMbNo();
+		System.out.println("지금부터 회원번호 " + tempDto.getMbNo()+ ", " + tempDto.getMbNm() + "님의 정보를 수정하겠습니다" );
+		
+		String mbnm = filterMbnm(scanner); //이름 예외처리
+		memList.setMbNm(mbnm);
+		
+		String mbph = filterMbph(scanner,mbno); //번호 예외처리
+		memList.setMbPh(mbph);
+		
+		String mbad = filterMbad(scanner); //주소 예외처리
+		memList.setMbAd(mbad);
+		
+		String inputGroup =  filterGroup(scanner); //그룹 예외처리
+		memList.setMbGno(inputGroup);
+
+		int result = memDao.modifyMember(memList, mbno); //db에서 수정
+		
+		if(result==1) {
+			System.out.println(tempDto.getMbNm() + " 회원님의 정보수정 완료");
+		}else {
+			System.out.println("회원수정 실패");
+		}
+	}
+	
+	public void deleteMember(Scanner scanner) { //멤버 삭제하기
+		MemDAO memDao = new MemDAO();
+		String mbno = null;
+		
+		ArrayList<MemDTO> noList= new ArrayList<MemDTO>();
+		
+		while(true) { // 이름 검색후 없으면 무한루프로 다시 검색하게
+			noList = searchByName(scanner);
+			if(noList.size()!=0) {
+				break;
+			}else {
+				System.out.println("없는 이름입니다 다시 입력하세요");
+			}
+		}
+		
+		System.out.println("지금부터 회원을 삭제하겠습니다");
+		
+		MemDTO tempDto = listingsMem(noList, scanner); //검색한 회원 숫자 1,2,3 부여하고 그중에서 고르기
+		mbno = tempDto.getMbNo();
+		
+		int result = memDao.deleteMember(mbno);	//회원 삭제
+		if(result==1) {
+			System.out.println(tempDto.getMbNm() + " 회원님의 정보삭제 완료");
+		}else {
+			System.out.println("회원삭제 실패");
+		}
+	}
+	
+	public String filterMbno(Scanner scanner) { //회원번호 중복 걸러내기
+		ArrayList<MemDTO> tempList = new ArrayList<MemDTO>(); 
+		tempList = searchAll();	
+		String mbno = null;
+		String pattern = "^[0-9]*$";
+		
+		while(true) {
+			
+			Iterator<MemDTO> it = tempList.iterator();
+			int i = 0;
+			System.out.println("회원번호는 중복되지 않습니다 0~9999의 번호를 부여해주세요");
+			System.out.print("회원번호: ");
+			mbno = scanner.next();
+			if(Pattern.matches(pattern, mbno)) { //숫자만 들어가게끔
+				while(it.hasNext()) {
+					MemDTO bookMbno = it.next();
+					if(mbno.equals(bookMbno.getMbNo())) {
+						i++;
+					}	
+				}
+				if(i!=0) {
+					System.out.println("중복된 회원번호가 존재합니다. 다시 입력하세요 ");
+				}else {
+					System.out.println("새로운 회원번호를 추가합니다");
+					return mbno;
+				}
+			}else {
+				System.out.println("숫자만 입력해야합니다");
+			}
+		}
+	}
+	
+	public String filterMbnm(Scanner scanner) { //이름 한글만 그리고 두자 이상으로 걸러내기
+		String mbnm = null;
+		
+		while(true) {
+			System.out.print("회원이름 : ");
+			mbnm = filterKor(scanner); //한글만
+			if(mbnm.length()>1) {
+				return mbnm;
+			}else {
+				System.out.println("이름은 두자 이상 입력하세요");
+			}
+		}
+	}
+	
+	public String filterMbph(Scanner scanner, String mbno) { //전화번호 숫자만 그리고 11자리 수, 중복 넣지 말기 
+		ArrayList<MemDTO> tempList = new ArrayList<MemDTO>(); 
+		tempList = searchAll();	
+		String mbph = null;
+		String pattern = "^[0-9]*$";
+		String tempMbno = null;
+		
+		while(true) {
+			Iterator<MemDTO> it = tempList.iterator();
+			int i = 0;
+			System.out.print("전화번호 : ");
+			mbph = scanner.next();
+			
+			if(Pattern.matches(pattern, mbph)) { //숫자만 들어가게끔
+				if(mbph.length()!=11) { //11자리 들어가게끔
+					System.out.println("전화번호를 제대로 입력하세요 (11자리)");
+				}else {
+					while(it.hasNext()) {
+						MemDTO bookPh = it.next();
+						if(mbph.equals(bookPh.getMbPh())) { //중복여부 i로 받아옴
+							tempMbno= bookPh.getMbNo();
+							i++;
+						}
+					}
+					if(i!=0) {  //중복 존재할때
+						if(tempMbno.equals(mbno)) { //중복인데 본인꺼랑 중복 일경우 그대로 입력
+							return mbph;
+						}else { //중복인데 다른 회원의 전화번호와 중복일 경우 걸러내기
+							System.out.println("같은 전화번호가 있습니다. 다시 입력하세요 ");
+						}
+						
+					}else { //중복 존재 안할때
+						return mbph;
+					}
+				}
+		}else {
+			System.out.println("숫자만 입력해야합니다");
+		}
+	}
+	}
+	
+	public String filterMbad(Scanner scanner) { //주소는 한글만 그리고 비어있으면 안됨
+		String mbad = null;
+		while(true) {
+			System.out.println("회원주소 : ");
+			mbad = filterKor(scanner); //한글만
+			if(mbad.isEmpty()) {
+				System.out.print("주소를 입력하시오 (주소는 비어있으면 안됩니다) : ");
+			}else if(mbad.isBlank()) {
+				System.out.print("주소를 입력하시오 (주소는 비어있으면 안됩니다) : ");
+			}else {
+				return mbad;
+			}
+		}
+	}
+	
+	public String filterGroup(Scanner scanner) { //그룹은 가족, 친구, 기타만 들어가게끔
+		String groupInput = null;
+		
+		while(true) {
+			System.out.print("회원그룹 : ");
+			groupInput = scanner.next();
+			if(groupInput.equals("가족")) {
+				return "10";
+			}else if(groupInput.equals("친구")) {
+				return "20";
+			}else if(groupInput.equals("기타")) {
+				return "30";
+			}else {
+				System.out.print("오류입니다. 가족, 친구, 기타 중 하나만 입력하시오 :");
+			}
+		}
+	}
+
+	public String filterKor(Scanner scanner) { //한글만 넣어주게 걸러주는 
+		String inputChar = null;
+		
+		while(true) {
+			int j = 0;
+			inputChar = scanner.next();
+			
+			char[] ch = inputChar.toCharArray();
+			for(int i = 0; i < ch.length; i++) {
+				if((ch[i] <'가' || ch[i] > '힣')) {
+					j++;
+				}
+			}
+			if(j!=0) {
+				System.out.println("한글만 입력하세요");
+			}else {
+				return inputChar;
+			}
+		}
+	}
+	
+
+	public String filtIntput(ArrayList<MemDTO> noList ,Scanner scanner) { //검색한 목록 중에서만 회원번호 없으면 다시 선택하기 
+		String inputNum = null;
+		MemView memView = new MemView();
+		memView.searchAll(noList);
+		while(true) {
+			System.out.println("회원번호를 선택하세요");
+			int temp = 0;
+			inputNum = scanner.next();
+			for(int i=0; i<noList.size(); i++) {
+				MemDTO tempDto = noList.get(i);
+				if(inputNum.equals(tempDto.getMbNo())) {
+					temp++;
+					return inputNum;
+				}
+			}
+			
+			if(temp!=0) {
+				return inputNum;
+			}else {
+				System.out.println("목록중의 회원번호를 선택하세요");
+			}
+		}
+	}
+	
+	
+	public MemDTO listingsMem(ArrayList<MemDTO> noList ,Scanner scanner) { //목록중에 있는 번호 선택하기
+		String inputNum = null;
+		MemView memView = new MemView();
+		MemDTO tempDto = new MemDTO();
+		ArrayList<MemDTO> tempList = new ArrayList<MemDTO>();
+		tempList = memView.searchName(noList);
+		
+		while(true) {
+			System.out.println("목록중의 번호를 선택하세요");
+			inputNum = scanner.next();
+			for(int i=0; i<tempList.size(); i++) {
+				tempDto = tempList.get(i);
+				if(inputNum.equals(tempDto.getListNum())) {
+//					System.out.println("있습니다!");
+					return tempDto;
+				}
+			}
+			
+
+		}
+		
+	}
+	
+	
+	
+}
+	

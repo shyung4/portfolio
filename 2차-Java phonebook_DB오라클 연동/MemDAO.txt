@@ -1,0 +1,240 @@
+package dao;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+
+import dto.MemDTO;
+
+public class MemDAO {
+
+	public Connection getConnection() {
+		Connection conn = null;
+		String url = "jdbc:oracle:thin:@localhost:1521:xe";
+		String userid = "ora_user";
+		String userpw = "hong";
+		
+		try {
+			conn = DriverManager.getConnection(url, userid, userpw);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("드라이버 로딩 및 연결 오류");
+		}
+		return conn;
+	}
+	public void close(ResultSet rs, Statement stmt, Connection conn) {
+		if(rs!=null) {
+		try {
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			}
+		}
+		if(stmt!=null) {
+			try {
+				stmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		if(conn!=null) {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	public void close(Statement stmt, Connection conn) { 
+		close(null, stmt, conn); 
+		
+	}
+	
+//	1. 사원조회
+	public ArrayList<MemDTO> searchAll() {
+		ArrayList<MemDTO> memList = new ArrayList<MemDTO>();
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+	
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT a.MBNO			");
+		sql.append("	 , a.MBNM			");
+		sql.append("	 , a.MBPH			");
+		sql.append("	 , a.MBAD			");
+		sql.append("	 , a.MBGNO			");
+		sql.append("	 , b.GROUPNAME		");
+		sql.append("  FROM phoneBook a		");
+		sql.append("	 , grouptable b	    ");
+		sql.append(" WHERE a.MBGNO = b.MBGNO");
+		sql.append(" ORDER BY a.MBNO ASC");
+		
+		conn = getConnection();
+		
+		try {
+			pstmt = conn.prepareStatement(sql.toString());
+			rs = pstmt.executeQuery();
+			
+			while(rs.next()) {
+				MemDTO memInfo = new MemDTO();
+				memInfo.setMbNo(rs.getString("mbNo"));
+				memInfo.setMbNm(rs.getString("mbNm"));
+				memInfo.setMbPh(rs.getString("mbPh"));
+				memInfo.setMbAd(rs.getString("mbAd"));
+				memInfo.setMbGno(rs.getString("mbGno"));
+				memInfo.setMbGnm(rs.getString("groupname"));
+				
+				memList.add(memInfo);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			close(rs, pstmt, conn);
+		}
+		return memList;
+			
+	}
+	
+//	1-1. 사원 이름 검색
+	public ArrayList<MemDTO> searchByName(String mbNm) {
+		ArrayList<MemDTO> memList = new ArrayList<MemDTO>();
+		Connection conn 		= null;
+		PreparedStatement pstmt = null;
+		ResultSet rs 			= null;
+		
+		StringBuilder sql = new StringBuilder();
+		
+		sql.append("SELECT a.MBNO					  ");
+		sql.append("	 , a.MBNM					  ");
+		sql.append("	 , a.MBPH					  ");
+		sql.append("	 , a.MBAD					  ");
+		sql.append("	 , a.MBGNO					  ");
+		sql.append(" 	 , b.GROUPNAME				  ");
+		sql.append("  FROM PHONEBOOK a				  ");
+		sql.append("	 , GROUPTABLE b			      ");
+		sql.append(" WHERE a.mbnm LIKE '%' || ? || '%'");
+		sql.append("   AND a.MBGNO = b.MBGNO		  ");
+		sql.append(" ORDER BY a.MBNO ASC");
+
+		conn = getConnection();
+		
+		try {
+			pstmt = conn.prepareStatement(sql.toString());
+			pstmt.setString(1, mbNm);
+			rs = pstmt.executeQuery();
+			
+			while(rs.next()) {
+				MemDTO memInfo = new MemDTO();
+				memInfo.setMbNo(rs.getString("mbno"));
+				memInfo.setMbNm(rs.getString("mbnm"));
+				memInfo.setMbPh(rs.getString("mbph"));
+				memInfo.setMbAd(rs.getString("mbad"));
+				memInfo.setMbGno(rs.getString("mbgno"));
+				memInfo.setMbGnm(rs.getString("groupname"));
+				
+				memList.add(memInfo);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			close(rs, pstmt, conn);
+		}
+		return memList;
+	
+	}
+
+//	2. 사원 추가
+	public int insertMember(MemDTO memInfo) {
+		
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		int result = 1;
+		
+		StringBuilder sql = new StringBuilder();
+		sql.append("INSERT INTO phonebook VALUES(?,?,?,?,?)");
+		
+		conn = getConnection();
+		
+		try {
+			pstmt = conn.prepareStatement(sql.toString());
+			pstmt.setString(1, memInfo.getMbNo());
+			pstmt.setString(2, memInfo.getMbNm());
+			pstmt.setString(3, memInfo.getMbPh());
+			pstmt.setString(4, memInfo.getMbAd());
+			pstmt.setString(5, memInfo.getMbGno());
+			result = pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			close(null, pstmt, conn);
+		}
+		return result;
+		
+	}
+	
+// 	3. 사원 수정
+	public int modifyMember(MemDTO memInfo, String mbno) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		int result = 1;
+		
+		StringBuilder sql = new StringBuilder();
+		sql.append("UPDATE phoneBook	");
+		sql.append("   SET mbnm = ? 	");
+		sql.append("	 , mbph = ? 	");
+		sql.append("	 , mbad = ? 	");
+		sql.append("	 , mbgno = ?	");
+		sql.append(" WHERE mbno = ? 	");
+		
+		conn = getConnection();
+		
+		try {
+			pstmt = conn.prepareStatement(sql.toString());
+			pstmt.setString(1, memInfo.getMbNm());
+			pstmt.setString(2, memInfo.getMbPh());
+			pstmt.setString(3, memInfo.getMbAd());
+			pstmt.setString(4, memInfo.getMbGno());
+			pstmt.setString(5, mbno);
+			result = pstmt.executeUpdate();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			close(null, pstmt, conn);
+		}
+		return result;
+		
+	}
+	
+
+
+//	4. 사원 삭제
+	public int deleteMember(String mbno) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		int result = 1;
+		
+		StringBuilder sql = new StringBuilder();
+		sql.append("DELETE FROM PHONEBOOK WHERE mbno = ?");
+	
+		conn = getConnection();
+		
+		try {
+			pstmt = conn.prepareStatement(sql.toString());
+			pstmt.setString(1, mbno);
+			result = pstmt.executeUpdate();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			close(null, pstmt, conn);
+		}
+		return result;
+	}
+	
+}
