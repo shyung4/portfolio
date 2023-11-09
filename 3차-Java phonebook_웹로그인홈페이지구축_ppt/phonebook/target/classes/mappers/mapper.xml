@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.naver.phone.dao.TestDao	">
+    <select id="selectList" parameterType="com.naver.phone.dto.PhoneDto" resultType="com.naver.phone.dto.PhoneDto">
+        SELECT mbid
+        	 , mbnm
+        	 , mbph
+        	 , mbad
+		FROM MEMTB a
+
+    </select>
+</mapper>
